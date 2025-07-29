@@ -34,6 +34,22 @@ module OmniAuth
         strategy.request_phase
       end
 
+      def test_request_phase_with_claims_passed_as_json
+        expected_redirect = /^https:\/\/example\.com\/authorize\?claims=%257B%2522id_token%2522%253A%257B%2522acr%2522%253A%257B%2522essential%2522%253Atrue%252C%2522values%2522%253A%255B%2522phr%2522%252C%2522phrh%2522%255D%257D%257D%257D&client_id=1234&nonce=\w{32}&response_type=code&scope=openid&state=\w{32}$/
+        strategy.options.issuer = 'example.com'
+        strategy.options.client_options.host = 'example.com'
+        strategy.options.claims = {
+          id_token: {
+            acr: {
+              essential: true,
+              values: ["phr", "phrh"]
+            }
+          }
+        }.to_json
+        strategy.expects(:redirect).with(regexp_matches(expected_redirect))
+        strategy.request_phase
+      end
+
       def test_logout_phase_with_discovery
         expected_redirect = %r{^https:\/\/example\.com\/logout$}
         strategy.options.client_options.host = 'example.com'
