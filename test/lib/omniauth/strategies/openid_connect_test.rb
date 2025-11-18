@@ -19,7 +19,7 @@ module OmniAuth
       end
 
       def test_request_phase_with_claims
-        expected_redirect = /^https:\/\/example\.com\/authorize\?claims=%257B%2522id_token%2522%253A%257B%2522acr%2522%253A%257B%2522essential%2522%253Atrue%252C%2522values%2522%253A%255B%2522phr%2522%252C%2522phrh%2522%255D%257D%257D%257D&client_id=1234&nonce=\w{32}&response_type=code&scope=openid&state=\w{32}$/
+        expected_redirect = /^https:\/\/example\.com\/authorize\?claims=%7B%22id_token%22%3A%7B%22acr%22%3A%7B%22essential%22%3Atrue%2C%22values%22%3A%5B%22phr%22%2C%22phrh%22%5D%7D%7D%7D&client_id=1234&nonce=\w{32}&response_type=code&scope=openid&state=\w{32}$/
         strategy.options.issuer = 'example.com'
         strategy.options.client_options.host = 'example.com'
         strategy.options.claims = {
@@ -35,7 +35,7 @@ module OmniAuth
       end
 
       def test_request_phase_with_claims_passed_as_json
-        expected_redirect = /^https:\/\/example\.com\/authorize\?claims=%257B%2522id_token%2522%253A%257B%2522acr%2522%253A%257B%2522essential%2522%253Atrue%252C%2522values%2522%253A%255B%2522phr%2522%252C%2522phrh%2522%255D%257D%257D%257D&client_id=1234&nonce=\w{32}&response_type=code&scope=openid&state=\w{32}$/
+        expected_redirect = /^https:\/\/example\.com\/authorize\?claims=%7B%22id_token%22%3A%7B%22acr%22%3A%7B%22essential%22%3Atrue%2C%22values%22%3A%5B%22phr%22%2C%22phrh%22%5D%7D%7D%7D&client_id=1234&nonce=\w{32}&response_type=code&scope=openid&state=\w{32}$/
         strategy.options.issuer = 'example.com'
         strategy.options.client_options.host = 'example.com'
         strategy.options.claims = {

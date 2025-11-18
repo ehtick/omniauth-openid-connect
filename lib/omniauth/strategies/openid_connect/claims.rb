@@ -40,7 +40,7 @@ module OmniAuth
         def claims_auth_param
           return nil unless claims?
 
-          ERB::Util.url_encode Hash(claims).to_json
+          Hash(claims).to_json
         end
 
         def claims
