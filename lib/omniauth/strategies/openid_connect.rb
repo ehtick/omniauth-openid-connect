@@ -106,6 +106,8 @@ module OmniAuth
         fail!(:timeout, e)
       rescue ::SocketError => e
         fail!(:failed_to_connect, e)
+      rescue OmniAuth::Strategies::OpenIDConnect::Claims::InvalidClaims => e
+        fail!(:claim_validation_error, e)
       end
 
       def other_phase

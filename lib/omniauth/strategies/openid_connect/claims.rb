@@ -2,6 +2,8 @@ module OmniAuth
   module Strategies
     class OpenIDConnect
       module Claims
+        class InvalidClaims < Error; end
+
         def self.prepended(base)
           base.class_exec do
             # Additional, specific claims to be requested on top of those requested via scopes.
@@ -83,10 +85,7 @@ module OmniAuth
         end
 
         def fail_missing_claim!(name)
-          raise(
-            ::OpenIDConnect::ResponseObject::IdToken::InvalidToken,
-            "Expected #{name} claim, but it was missing"
-          )
+          raise InvalidClaims, "Expected #{name} claim, but it was missing"
         end
 
         def validate_essential_claim_value!(claim, request, actual)
@@ -96,10 +95,7 @@ module OmniAuth
           return if requested_values.include?(actual)
 
           expected = requested_values.map { |v| "'#{v}'" }.join(", ")
-          raise(
-            ::OpenIDConnect::ResponseObject::IdToken::InvalidToken,
-            "Expected one of #{claim} values [#{expected}], got #{actual.inspect}"
-          )
+          raise InvalidClaims, "Expected one of #{claim} values [#{expected}], got #{actual.inspect}"
         end
 
         def requested_values(request)

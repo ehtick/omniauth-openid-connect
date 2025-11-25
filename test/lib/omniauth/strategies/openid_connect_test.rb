@@ -216,11 +216,14 @@ module OmniAuth
           id_token.stubs(:abc).returns("def")
         end
 
-        ex = assert_raises ::OpenIDConnect::ResponseObject::IdToken::InvalidToken do
+        catching_failures do
           test_callback_phase(options: options, userinfo: false, stub_id_token: stub_id_token)
+          expect_authentication_error(
+            :claim_validation_error,
+            exception_class: OmniAuth::Strategies::OpenIDConnect::Claims::InvalidClaims,
+            message: "Expected acr claim, but it was missing"
+          )
         end
-
-        assert_equal ex.message, "Expected acr claim, but it was missing"
       end
 
       def test_callback_phase_with_missing_claim_values
@@ -239,11 +242,14 @@ module OmniAuth
           id_token.stubs(:acr).returns([])
         end
 
-        ex = assert_raises ::OpenIDConnect::ResponseObject::IdToken::InvalidToken do
+        catching_failures do
           test_callback_phase(options: options, userinfo: false, stub_id_token: stub_id_token)
+          expect_authentication_error(
+            :claim_validation_error,
+            exception_class: OmniAuth::Strategies::OpenIDConnect::Claims::InvalidClaims,
+            message: "Expected one of acr values ['phr', 'phrh'], got []"
+          )
         end
-
-        assert_equal ex.message, "Expected one of acr values ['phr', 'phrh'], got []"
       end
 
       def test_callback_phase_with_wrong_claim_values
@@ -262,11 +268,14 @@ module OmniAuth
           id_token.stubs(:acr).returns("abc")
         end
 
-        ex = assert_raises ::OpenIDConnect::ResponseObject::IdToken::InvalidToken do
+        catching_failures do
           test_callback_phase(options: options, userinfo: false, stub_id_token: stub_id_token)
+          expect_authentication_error(
+            :claim_validation_error,
+            exception_class: OmniAuth::Strategies::OpenIDConnect::Claims::InvalidClaims,
+            message: "Expected one of acr values ['phr', 'phrh'], got \"abc\""
+          )
         end
-
-        assert_equal ex.message, "Expected one of acr values ['phr', 'phrh'], got \"abc\""
       end
 
       def test_callback_phase_with_array_result
@@ -285,13 +294,16 @@ module OmniAuth
           id_token.stubs(:acr).returns(["phr"])
         end
 
-        ex = assert_raises ::OpenIDConnect::ResponseObject::IdToken::InvalidToken do
+        catching_failures do
+          # This is a regression test, we used to accept a claim response that was an array with one of the requested
+          # values, when the specification merely asks to validate that the actual value EQUALS one of the requested values
           test_callback_phase(options: options, userinfo: false, stub_id_token: stub_id_token)
+          expect_authentication_error(
+            :claim_validation_error,
+            exception_class: OmniAuth::Strategies::OpenIDConnect::Claims::InvalidClaims,
+            message: "Expected one of acr values ['phr', 'phrh'], got [\"phr\"]"
+          )
         end
-
-        # This is a regression test, we used to accept a claim response that was an array with one of the requested
-        # values, when the specification merely asks to validate that the actual value EQUALS one of the requested values
-        assert_equal ex.message, "Expected one of acr values ['phr', 'phrh'], got [\"phr\"]"
       end
 
       def test_callback_phase_with_expected_claim_value
@@ -310,7 +322,10 @@ module OmniAuth
           id_token.stubs(:acr).returns("phr")
         end
 
-        test_callback_phase(options: options, userinfo: true, stub_id_token: stub_id_token)
+        catching_failures do
+          test_callback_phase(options: options, userinfo: true, stub_id_token: stub_id_token)
+          expect_no_authentication_error
+        end
       end
 
       def test_callback_phase_with_missing_essential_claims
@@ -328,11 +343,14 @@ module OmniAuth
           id_token.stubs(:def).returns("ghi")
         end
 
-        ex = assert_raises ::OpenIDConnect::ResponseObject::IdToken::InvalidToken do
+        catching_failures do
           test_callback_phase(options: options, userinfo: false, stub_id_token: stub_id_token)
+          expect_authentication_error(
+            :claim_validation_error,
+            exception_class: OmniAuth::Strategies::OpenIDConnect::Claims::InvalidClaims,
+            message: "Expected abc claim, but it was missing"
+          )
         end
-
-        assert_equal ex.message, "Expected abc claim, but it was missing"
       end
 
       def test_callback_phase_with_present_essential_claims
@@ -350,7 +368,10 @@ module OmniAuth
           id_token.stubs(:abc).returns("def")
         end
 
-        test_callback_phase(options: options, userinfo: true, stub_id_token: stub_id_token)
+        catching_failures do
+          test_callback_phase(options: options, userinfo: true, stub_id_token: stub_id_token)
+          expect_no_authentication_error
+        end
       end
 
       def test_callback_phase_with_discovery
