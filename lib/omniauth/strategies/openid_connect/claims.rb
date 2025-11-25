@@ -76,38 +76,37 @@ module OmniAuth
           id_token = decode_id_token access_token.id_token
 
           essential_claims(:id_token).each do |claim, request|
-            require_essential_claim! claim, Hash(request), id_token.send(claim) if id_token.respond_to? claim
+            fail_missing_claim!(claim) unless id_token.respond_to? claim
+
+            validate_essential_claim_value! claim, request, id_token.public_send(claim)
           end
         end
 
-        def require_essential_claim!(claim, request, response)
-          expected_values = [request["value"]].select(&:present?).presence || claim_values(request["values"].presence)
-
-          return unless expected_values.present?
-
-          actual_values = claim_values response
-
-          return if expected_values.any? { |value| actual_values.include? value }
-
-          expected = expected_values.map { |v| "'#{v}'" }.join(", ")
-          actual = actual_values.map { |v| "'#{v}'" }.join(", ")
-
+        def fail_missing_claim!(name)
           raise(
             ::OpenIDConnect::ResponseObject::IdToken::InvalidToken,
-            "Expected one of #{claim.to_s.upcase} values [#{expected}] in [#{actual}]"
+            "Expected #{name} claim, but it was missing"
           )
         end
 
-        ##
-        # Makes sure the given ACR values are parsed correctly as an array.
-        # They are supposed to be given as an array but in other places such as the `acr_values`
-        # request parameter they are just a string of space-separated values.
-        #
-        # @param input [String, Array<String>] ACR values either directly as an array or as a space-separated string.
-        #
-        # @return [Array<String>] An array of ACR values.
-        def claim_values(input)
-          Array(input).flat_map { |value| String(value).split(" ") }
+        def validate_essential_claim_value!(claim, request, actual)
+          requested_values = requested_values(request)
+          return if requested_values.nil?
+
+          return if requested_values.include?(actual)
+
+          expected = requested_values.map { |v| "'#{v}'" }.join(", ")
+          raise(
+            ::OpenIDConnect::ResponseObject::IdToken::InvalidToken,
+            "Expected one of #{claim} values [#{expected}], got #{actual.inspect}"
+          )
+        end
+
+        def requested_values(request)
+          return [request["value"]] if request.key?("value")
+          return request["values"] if request.key?("values")
+
+          nil
         end
       end
     end

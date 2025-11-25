@@ -213,6 +213,29 @@ module OmniAuth
         }
 
         stub_id_token = lambda do |id_token|
+          id_token.stubs(:abc).returns("def")
+        end
+
+        ex = assert_raises ::OpenIDConnect::ResponseObject::IdToken::InvalidToken do
+          test_callback_phase(options: options, userinfo: false, stub_id_token: stub_id_token)
+        end
+
+        assert_equal ex.message, "Expected acr claim, but it was missing"
+      end
+
+      def test_callback_phase_with_missing_claim_values
+        options = {
+          claims: {
+            id_token: {
+              acr: {
+                essential: true,
+                values: ["phr", "phrh"]
+              }
+            }
+          }
+        }
+
+        stub_id_token = lambda do |id_token|
           id_token.stubs(:acr).returns([])
         end
 
@@ -220,10 +243,33 @@ module OmniAuth
           test_callback_phase(options: options, userinfo: false, stub_id_token: stub_id_token)
         end
 
-        assert_equal ex.message, "Expected one of ACR values ['phr', 'phrh'] in []"
+        assert_equal ex.message, "Expected one of acr values ['phr', 'phrh'], got []"
       end
 
-      def test_callback_phase_with_returned_claims
+      def test_callback_phase_with_wrong_claim_values
+        options = {
+          claims: {
+            id_token: {
+              acr: {
+                essential: true,
+                values: ["phr", "phrh"]
+              }
+            }
+          }
+        }
+
+        stub_id_token = lambda do |id_token|
+          id_token.stubs(:acr).returns("abc")
+        end
+
+        ex = assert_raises ::OpenIDConnect::ResponseObject::IdToken::InvalidToken do
+          test_callback_phase(options: options, userinfo: false, stub_id_token: stub_id_token)
+        end
+
+        assert_equal ex.message, "Expected one of acr values ['phr', 'phrh'], got \"abc\""
+      end
+
+      def test_callback_phase_with_array_result
         options = {
           claims: {
             id_token: {
@@ -237,6 +283,71 @@ module OmniAuth
 
         stub_id_token = lambda do |id_token|
           id_token.stubs(:acr).returns(["phr"])
+        end
+
+        ex = assert_raises ::OpenIDConnect::ResponseObject::IdToken::InvalidToken do
+          test_callback_phase(options: options, userinfo: false, stub_id_token: stub_id_token)
+        end
+
+        # This is a regression test, we used to accept a claim response that was an array with one of the requested
+        # values, when the specification merely asks to validate that the actual value EQUALS one of the requested values
+        assert_equal ex.message, "Expected one of acr values ['phr', 'phrh'], got [\"phr\"]"
+      end
+
+      def test_callback_phase_with_expected_claim_value
+        options = {
+          claims: {
+            id_token: {
+              acr: {
+                essential: true,
+                values: ["phr", "phrh"]
+              }
+            }
+          }
+        }
+
+        stub_id_token = lambda do |id_token|
+          id_token.stubs(:acr).returns("phr")
+        end
+
+        test_callback_phase(options: options, userinfo: true, stub_id_token: stub_id_token)
+      end
+
+      def test_callback_phase_with_missing_essential_claims
+        options = {
+          claims: {
+            id_token: {
+              abc: {
+                essential: true
+              }
+            }
+          }
+        }
+
+        stub_id_token = lambda do |id_token|
+          id_token.stubs(:def).returns("ghi")
+        end
+
+        ex = assert_raises ::OpenIDConnect::ResponseObject::IdToken::InvalidToken do
+          test_callback_phase(options: options, userinfo: false, stub_id_token: stub_id_token)
+        end
+
+        assert_equal ex.message, "Expected abc claim, but it was missing"
+      end
+
+      def test_callback_phase_with_present_essential_claims
+        options = {
+          claims: {
+            id_token: {
+              abc: {
+                essential: true
+              }
+            }
+          }
+        }
+
+        stub_id_token = lambda do |id_token|
+          id_token.stubs(:abc).returns("def")
         end
 
         test_callback_phase(options: options, userinfo: true, stub_id_token: stub_id_token)
