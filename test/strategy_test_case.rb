@@ -51,4 +51,24 @@ class StrategyTestCase < Minitest::Test
       strategy.stubs(:user_info).returns(user_info)
     end
   end
+
+  # Allows to test that properly handled authentication errors occured within the scope of the passed block
+  def catching_failures
+    original_failure_handler = OmniAuth.config.on_failure
+    @failure_env = nil
+    OmniAuth.config.on_failure = ->(env) { @failure_env = env; [400, {}, "sad sad"] }
+    yield
+  ensure
+    OmniAuth.config.on_failure = original_failure_handler
+  end
+
+  def expect_authentication_error(type, exception_class: nil, message: nil)
+    assert_equal(@failure_env["omniauth.error.type"], type)
+    assert_equal(@failure_env["omniauth.error"].class, exception_class) if exception_class
+    assert_equal(@failure_env["omniauth.error"]&.message, message) if message
+  end
+
+  def expect_no_authentication_error
+    assert(@failure_env.nil?, "expected no authentication errors")
+  end
 end
