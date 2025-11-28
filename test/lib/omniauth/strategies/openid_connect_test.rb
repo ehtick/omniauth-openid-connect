@@ -247,7 +247,7 @@ module OmniAuth
           expect_authentication_error(
             :claim_validation_error,
             exception_class: OmniAuth::Strategies::OpenIDConnect::Claims::InvalidClaims,
-            message: "Expected one of acr values ['phr', 'phrh'], got []"
+            message: 'Expected one of acr values ["phr", "phrh"], got []'
           )
         end
       end
@@ -273,7 +273,7 @@ module OmniAuth
           expect_authentication_error(
             :claim_validation_error,
             exception_class: OmniAuth::Strategies::OpenIDConnect::Claims::InvalidClaims,
-            message: "Expected one of acr values ['phr', 'phrh'], got \"abc\""
+            message: 'Expected one of acr values ["phr", "phrh"], got "abc"'
           )
         end
       end
@@ -301,7 +301,7 @@ module OmniAuth
           expect_authentication_error(
             :claim_validation_error,
             exception_class: OmniAuth::Strategies::OpenIDConnect::Claims::InvalidClaims,
-            message: "Expected one of acr values ['phr', 'phrh'], got [\"phr\"]"
+            message: 'Expected one of acr values ["phr", "phrh"], got ["phr"]'
           )
         end
       end

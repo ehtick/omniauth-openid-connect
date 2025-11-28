@@ -91,11 +91,9 @@ module OmniAuth
         def validate_essential_claim_value!(claim, request, actual)
           requested_values = requested_values(request)
           return if requested_values.nil?
-
           return if requested_values.include?(actual)
 
-          expected = requested_values.map { |v| "'#{v}'" }.join(", ")
-          raise InvalidClaims, "Expected one of #{claim} values [#{expected}], got #{actual.inspect}"
+          raise InvalidClaims, "Expected one of #{claim} values #{requested_values.inspect}, got #{actual.inspect}"
         end
 
         def requested_values(request)
