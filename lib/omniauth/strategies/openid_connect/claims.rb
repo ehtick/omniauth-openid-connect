@@ -30,7 +30,7 @@ module OmniAuth
         def validate_access_token!(access_token)
           super
 
-          verify_id_token_claims! access_token
+          verify_id_token_claims!(access_token)
         end
 
         def authorize_options
@@ -75,12 +75,12 @@ module OmniAuth
         def verify_id_token_claims!(access_token)
           return unless claims?
 
-          id_token = decode_id_token access_token.id_token
+          id_token = decode_id_token(access_token.id_token)
 
           essential_claims(:id_token).each do |claim, request|
-            fail_missing_claim!(claim) unless id_token.respond_to? claim
+            fail_missing_claim!(claim) unless id_token.respond_to?(claim)
 
-            validate_essential_claim_value! claim, request, id_token.public_send(claim)
+            validate_essential_claim_value!(claim, request, id_token.public_send(claim))
           end
         end
 
