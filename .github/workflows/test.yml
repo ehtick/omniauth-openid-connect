@@ -12,15 +12,22 @@ permissions:
 
 jobs:
   tests:
-    name: Tests
+    name: Tests (Ruby ${{ matrix.ruby }})
     runs-on: ubuntu-latest
     timeout-minutes: 5
+    strategy:
+      fail-fast: false
+      matrix:
+        ruby:
+          - '3.2'
+          - '3.4'
+          - '4.0'
     steps:
     - uses: actions/checkout@v3
     - name: Setup ruby
       uses: ruby/setup-ruby@v1
       with:
-        ruby-version: '3.2.1'
+        ruby-version: ${{ matrix.ruby }}
         bundler-cache: true
     - name: test
       run: |
